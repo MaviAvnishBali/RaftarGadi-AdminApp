@@ -1,0 +1,26 @@
+name: admin_app
+description: "Raftar Gaddi — admin application."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  core:
+    path: ../../packages/core
+  cupertino_icons: ^1.0.8
+  design_system:
+    path: ../../packages/design_system
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
