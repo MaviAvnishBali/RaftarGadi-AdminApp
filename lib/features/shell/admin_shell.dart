@@ -75,6 +75,8 @@ class _AdminShellState extends ConsumerState<AdminShell> {
   Widget build(BuildContext context) {
     final session = ref.watch(adminSessionControllerProvider);
     final user = session.user;
+    final rawName = user?.name;
+    final displayName = (rawName != null && rawName.isNotEmpty) ? rawName : 'Rohit Kumar';
     final selectedIndex = _calculateSelectedIndex(context);
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
@@ -120,26 +122,37 @@ class _AdminShellState extends ConsumerState<AdminShell> {
           ),
         ),
         drawer: Drawer(
-          backgroundColor: RaftarColors.navy,
+          backgroundColor: RaftarColors.navyDark,
           child: SafeArea(
             top: false,
             child: Column(
               children: [
                 DrawerHeader(
-                  decoration: const BoxDecoration(color: RaftarColors.navyDark),
+                  decoration: const BoxDecoration(
+                    color: RaftarColors.navyCard,
+                    border: Border(bottom: BorderSide(color: RaftarColors.navyBorder)),
+                  ),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const RaftarLogo(height: 52, onNavyPanel: false),
+                        const RaftarLogo(height: 48, onNavyPanel: false),
                         const SizedBox(height: RaftarSpacing.sm),
                         Text(
-                          user?.name ?? 'Admin',
-                          style: const TextStyle(color: RaftarColors.white, fontWeight: FontWeight.bold),
+                          displayName,
+                          style: const TextStyle(color: RaftarColors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        Text(
-                          user?.role ?? 'OPERATOR',
-                          style: const TextStyle(color: RaftarColors.accent, fontSize: 11),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(width: 8, height: 8, decoration: const BoxDecoration(color: RaftarColors.green, shape: BoxShape.circle)),
+                            const SizedBox(width: 5),
+                            const Text(
+                              'Super Admin • Online',
+                              style: TextStyle(color: RaftarColors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -147,41 +160,55 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                 ),
                 Expanded(
                   child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     itemCount: navItems.length,
                     itemBuilder: (context, idx) {
                       final item = navItems[idx];
                       final isSelected = selectedIndex == idx;
-                      return ListTile(
-                        leading: Icon(
-                          item.icon,
-                          color: isSelected ? RaftarColors.primary : Colors.white70,
-                        ),
-                        title: Text(
-                          item.label,
-                          style: TextStyle(
-                            color: isSelected ? RaftarColors.white : Colors.white70,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            leading: Icon(
+                              item.icon,
+                              color: isSelected ? RaftarColors.navyDark : Colors.white70,
+                              size: 20,
+                            ),
+                            title: Text(
+                              item.label,
+                              style: TextStyle(
+                                color: isSelected ? RaftarColors.navyDark : Colors.white70,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                            trailing: item.badge != null
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? RaftarColors.navyDark : RaftarColors.warning,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      item.badge!,
+                                      style: TextStyle(
+                                        color: isSelected ? RaftarColors.green : Colors.black,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                            selected: isSelected,
+                            tileColor: isSelected ? RaftarColors.green : Colors.transparent,
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _onItemTapped(idx, context);
+                            },
                           ),
                         ),
-                        trailing: item.badge != null
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: RaftarColors.warning,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  item.badge!,
-                                  style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold),
-                                ),
-                              )
-                            : null,
-                        selected: isSelected,
-                        selectedTileColor: RaftarColors.primary.withValues(alpha: 0.15),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _onItemTapped(idx, context);
-                        },
                       );
                     },
                   ),
@@ -222,7 +249,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
           // Sidebar
           Container(
             width: 260,
-            color: RaftarColors.navy,
+            color: RaftarColors.navyDark,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -238,25 +265,26 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                       const RaftarLogo(height: 48, onNavyPanel: false),
                       const SizedBox(height: RaftarSpacing.sm),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: RaftarColors.primary.withValues(alpha: 0.2),
+                          color: RaftarColors.green.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: RaftarColors.green.withValues(alpha: 0.3)),
                         ),
                         child: const Text(
                           'OPERATIONS CONSOLE',
                           style: TextStyle(
-                            color: RaftarColors.accent,
+                            color: RaftarColors.green,
                             fontSize: 10,
                             letterSpacing: 1.2,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Divider(color: Colors.white12, height: 1),
+                const Divider(color: RaftarColors.navyBorder, height: 1),
                 const SizedBox(height: RaftarSpacing.md),
 
                 // Nav Links
@@ -274,36 +302,33 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(RaftarRadii.md),
+                            borderRadius: BorderRadius.circular(10),
                             onTap: () => _onItemTapped(idx, context),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: RaftarSpacing.md,
-                                vertical: RaftarSpacing.md,
+                                vertical: 12,
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? RaftarColors.primary.withValues(alpha: 0.25)
+                                    ? RaftarColors.green
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(RaftarRadii.md),
-                                border: isSelected
-                                    ? Border.all(color: RaftarColors.primary.withValues(alpha: 0.5))
-                                    : null,
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
                                 children: [
                                   Icon(
                                     item.icon,
                                     size: 20,
-                                    color: isSelected ? RaftarColors.accent : Colors.white70,
+                                    color: isSelected ? RaftarColors.navyDark : Colors.white70,
                                   ),
                                   const SizedBox(width: RaftarSpacing.md),
                                   Expanded(
                                     child: Text(
                                       item.label,
                                       style: TextStyle(
-                                        color: isSelected ? RaftarColors.white : Colors.white70,
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                        color: isSelected ? RaftarColors.navyDark : Colors.white70,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                                         fontSize: 14,
                                       ),
                                     ),
@@ -312,13 +337,13 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: RaftarColors.warning,
+                                        color: isSelected ? RaftarColors.navyDark : RaftarColors.warning,
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Text(
                                         item.badge!,
-                                        style: const TextStyle(
-                                          color: Colors.black,
+                                        style: TextStyle(
+                                          color: isSelected ? RaftarColors.green : Colors.black,
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -334,7 +359,46 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                   ),
                 ),
 
-                const Divider(color: Colors.white12, height: 1),
+                // "Moving India Together" banner card from Image 3
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: RaftarSpacing.md, vertical: RaftarSpacing.sm),
+                  padding: const EdgeInsets.all(RaftarSpacing.md),
+                  decoration: BoxDecoration(
+                    color: RaftarColors.navyCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: RaftarColors.navyBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: RaftarColors.green.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.local_shipping_rounded, color: RaftarColors.green, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Moving India Together',
+                              style: TextStyle(color: RaftarColors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                            ),
+                            Text(
+                              'Logistics Simplified',
+                              style: TextStyle(color: Colors.white54, fontSize: 9),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(color: RaftarColors.navyBorder, height: 1),
 
                 // Operator Profile Footer
                 Padding(
@@ -343,10 +407,10 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                     children: [
                       CircleAvatar(
                         radius: 18,
-                        backgroundColor: RaftarColors.primary,
+                        backgroundColor: RaftarColors.navyCard,
                         child: Text(
-                          user?.name.isNotEmpty == true ? user!.name[0] : 'A',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          displayName.isNotEmpty ? displayName[0].toUpperCase() : 'R',
+                          style: const TextStyle(color: RaftarColors.green, fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: RaftarSpacing.md),
@@ -355,7 +419,7 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              user?.name ?? 'Admin',
+                              displayName,
                               style: const TextStyle(
                                 color: RaftarColors.white,
                                 fontWeight: FontWeight.w600,
@@ -363,9 +427,19 @@ class _AdminShellState extends ConsumerState<AdminShell> {
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            Text(
-                              user?.role ?? 'ADMIN',
-                              style: const TextStyle(color: Colors.white54, fontSize: 11),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: const BoxDecoration(color: RaftarColors.green, shape: BoxShape.circle),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'Super Admin • Online',
+                                  style: TextStyle(color: RaftarColors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
                           ],
                         ),

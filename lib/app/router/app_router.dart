@@ -32,6 +32,7 @@ final adminRouterProvider = Provider<GoRouter>((ref) {
       final isLogin = state.uri.path == AdminRoutes.login;
 
       if (session.status == AdminSessionStatus.unknown) {
+        if (isLogin) return null;
         return isSplash ? null : AdminRoutes.splash;
       }
 

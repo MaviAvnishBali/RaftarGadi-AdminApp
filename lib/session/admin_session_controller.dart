@@ -65,28 +65,36 @@ class AdminSessionController extends Notifier<AdminSessionState> {
     return const AdminSessionState.unknown();
   }
 
-  Future<void> bootstrap() async {
-    final rawUser = _store.read<String>(_userKey);
-    final token = _store.read<String>(_tokenKey);
-
-    if (token != null && token.isNotEmpty) {
-      ref.read(apiClientProvider).setAuthToken(token);
-    }
-
-    if (rawUser != null && rawUser.isNotEmpty) {
-      try {
-        final decoded = jsonDecode(rawUser) as Map<String, dynamic>;
-        state = AdminSessionState(
-          status: AdminSessionStatus.authenticated,
-          user: AdminUser.fromJson(decoded),
-        );
-        return;
-      } catch (_) {
-        // Fallback to unauthenticated if corrupted
-      }
-    }
-
+  void setUnauthenticated() {
     state = const AdminSessionState(status: AdminSessionStatus.unauthenticated);
+  }
+
+  Future<void> bootstrap() async {
+    try {
+      final rawUser = _store.read<String>(_userKey);
+      final token = _store.read<String>(_tokenKey);
+
+      if (token != null && token.isNotEmpty) {
+        ref.read(apiClientProvider).setAuthToken(token);
+      }
+
+      if (rawUser != null && rawUser.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(rawUser) as Map<String, dynamic>;
+          state = AdminSessionState(
+            status: AdminSessionStatus.authenticated,
+            user: AdminUser.fromJson(decoded),
+          );
+          return;
+        } catch (_) {
+          // Fallback to unauthenticated if corrupted
+        }
+      }
+
+      state = const AdminSessionState(status: AdminSessionStatus.unauthenticated);
+    } catch (_) {
+      setUnauthenticated();
+    }
   }
 
   Future<void> signIn(AdminUser user, {String? token}) async {
